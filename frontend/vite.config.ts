@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 5173,
+    allowedHosts: ["sungraph.olykov.com", "localhost", "127.0.0.1"],
     proxy: {
       '/api': {
         target: 'http://backend:8000',
