@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "@fontsource/outfit/400.css";
+@import "@fontsource/outfit/500.css";
+@import "@fontsource/outfit/600.css";
+@import "@fontsource/outfit/700.css";
+
+@layer base {
+  :root {
+    --background: 45 30% 97%;
+    --foreground: 30 10% 15%;
+
+    --card: 45 40% 99%;
+    --card-foreground: 30 10% 15%;
+
+    --popover: 45 40% 99%;
+    --popover-foreground: 30 10% 15%;
+
+    --primary: 38 92% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 45 30% 92%;
+    --secondary-foreground: 30 10% 25%;
+
+    --muted: 45 20% 90%;
+    --muted-foreground: 30 10% 45%;
+
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 45 25% 88%;
+    --input: 45 25% 88%;
+    --ring: 38 92% 50%;
+
+    --radius: 0.75rem;
+
+    /* Custom weather colors - orange (hot/sunny) to light yellow (less sunny) to grey (cloudy) */
+    --sunny-5: 24 95% 50%;
+    --sunny-4: 30 90% 55%;
+    --sunny-3: 38 85% 60%;
+    --sunny-2: 45 80% 70%;
+    --sunny-1: 50 70% 78%;
+    --cloudy: 220 10% 82%;
+
+    --gradient-warm: linear-gradient(135deg, hsl(38, 92%, 50%) 0%, hsl(24, 95%, 53%) 100%);
+    --gradient-sky: linear-gradient(180deg, hsl(200, 80%, 85%) 0%, hsl(45, 30%, 97%) 100%);
+
+    --shadow-warm: 0 4px 24px -4px hsl(38 92% 50% / 0.25);
+    --shadow-soft: 0 4px 20px -4px hsl(30 10% 15% / 0.08);
+
+    --font-sans: "Outfit", system-ui, sans-serif;
+  }
+
+  .dark {
+    --background: 30 15% 10%;
+    --foreground: 45 30% 95%;
+
+    --card: 30 15% 13%;
+    --card-foreground: 45 30% 95%;
+
+    --popover: 30 15% 13%;
+    --popover-foreground: 45 30% 95%;
+
+    --primary: 38 92% 55%;
+    --primary-foreground: 30 15% 10%;
+
+    --secondary: 30 15% 18%;
+    --secondary-foreground: 45 30% 90%;
+
+    --muted: 30 15% 20%;
+    --muted-foreground: 45 20% 60%;
+
+    --accent: 24 95% 58%;
+    --accent-foreground: 30 15% 10%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 15% 22%;
+    --input: 30 15% 22%;
+    --ring: 38 92% 55%;
+
+    --sunny-5: 24 95% 55%;
+    --sunny-4: 30 90% 60%;
+    --sunny-3: 38 85% 65%;
+    --sunny-2: 45 80% 72%;
+    --sunny-1: 50 70% 80%;
+    --cloudy: 220 10% 35%;
+
+    --shadow-warm: 0 4px 24px -4px hsl(38 92% 50% / 0.3);
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: var(--font-sans);
+  }
+}
+
+@layer utilities {
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+  
+  .gradient-sky {
+    background: var(--gradient-sky);
+  }
+  
+  .shadow-warm {
+    box-shadow: var(--shadow-warm);
+  }
+  
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+}

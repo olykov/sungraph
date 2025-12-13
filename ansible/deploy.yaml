@@ -1,0 +1,119 @@
+---
+- name: Deploy Weather Application
+  hosts: app
+  become: yes
+  vars:
+    work_dir: /root/weather-app
+    # Default variable values (can be overridden by env vars)
+    docker_user: "{{ lookup('env', 'DOCKER_HUB_USERNAME') }}"
+    postgres_user: "{{ lookup('env', 'POSTGRES_USER') }}"
+    postgres_password: "{{ lookup('env', 'POSTGRES_PASSWORD') }}"
+    postgres_db: "{{ lookup('env', 'POSTGRES_DB') }}"
+    api_key: "{{ lookup('env', 'WEATHER_API_KEY') }}"
+  
+
+  
+  tasks:
+    - name: Ensure working directory exists
+      ansible.builtin.file:
+        path: "{{ work_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy backend source code
+      ansible.builtin.copy:
+        src: "../backend/"
+        dest: "{{ work_dir }}/backend/"
+        mode: '0755'
+    
+    - name: Copy frontend source code
+      ansible.builtin.copy:
+        src: "../frontend/"
+        dest: "{{ work_dir }}/frontend/"
+        mode: '0755'
+
+    - name: Create docker-compose.yaml
+      ansible.builtin.copy:
+        dest: "{{ work_dir }}/docker-compose.yaml"
+        content: |
+          services:
+            db:
+              image: postgres:15-alpine
+              environment:
+                - POSTGRES_USER={{ postgres_user }}
+                - POSTGRES_PASSWORD={{ postgres_password }}
+                - POSTGRES_DB={{ postgres_db }}
+              volumes:
+                - postgres_data:/var/lib/postgresql/data
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U {{ postgres_user }} -d {{ postgres_db }}"]
+                interval: 5s
+                timeout: 5s
+                retries: 5
+
+            backend:
+              build: ./backend
+              volumes:
+                - ./backend:/app
+              environment:
+                - DB_HOST=db
+                - POSTGRES_USER={{ postgres_user }}
+                - POSTGRES_PASSWORD={{ postgres_password }}
+                - POSTGRES_DB={{ postgres_db }}
+                - API_KEY={{ api_key }}
+              depends_on:
+                db:
+                  condition: service_healthy
+
+            worker:
+              build: ./backend
+              command: python worker.py
+              volumes:
+                - ./backend:/app
+              environment:
+                - DB_HOST=db
+                - POSTGRES_USER={{ postgres_user }}
+                - POSTGRES_PASSWORD={{ postgres_password }}
+                - POSTGRES_DB={{ postgres_db }}
+                - API_KEY={{ api_key }}
+              depends_on:
+                backend:
+                  condition: service_started
+                db:
+                  condition: service_healthy
+
+            historical_worker:
+              build: ./backend
+              command: python historical_worker.py
+              volumes:
+                - ./backend:/app
+              environment:
+                - DB_HOST=db
+                - POSTGRES_USER={{ postgres_user }}
+                - POSTGRES_PASSWORD={{ postgres_password }}
+                - POSTGRES_DB={{ postgres_db }}
+                - API_KEY={{ api_key }}
+              depends_on:
+                backend:
+                  condition: service_started
+                db:
+                  condition: service_healthy
+
+            frontend:
+              build: ./frontend
+              ports:
+                - "5179:5173"
+              volumes:
+                - ./frontend:/app
+                - /app/node_modules
+              restart: always
+
+          volumes:
+            postgres_data:
+        mode: '0644'
+
+    - name: Build and start containers
+      community.docker.docker_compose_v2:
+        project_src: "{{ work_dir }}"
+        build: always
+        state: present

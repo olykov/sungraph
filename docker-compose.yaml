@@ -1,0 +1,83 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: weather-db
+    networks:
+      - core-infra
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-weather}
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-weather}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    image: ${DOCKER_USER:-olykov}/weather-backend
+    container_name: weather-backend
+    networks:
+      - core-infra
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    build: ./backend
+    image: ${DOCKER_USER:-olykov}/weather-backend
+    container_name: weather-worker
+    networks:
+      - core-infra
+    command: python worker.py
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    depends_on:
+      backend:
+        condition: service_started
+      db:
+        condition: service_healthy
+
+  historical_worker:
+    build: ./backend
+    image: ${DOCKER_USER:-olykov}/weather-backend
+    container_name: weather-historical-worker
+    networks:
+      - core-infra
+    command: python historical_worker.py
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    depends_on:
+      backend:
+        condition: service_started
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    image: ${DOCKER_USER:-olykov}/weather-frontend
+    container_name: weather-frontend
+    ports:
+      - "5179:5173"
+    networks:
+      - core-infra
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: always
+
+
+networks:
+  core-infra:
+    external: true

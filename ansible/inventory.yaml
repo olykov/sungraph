@@ -1,0 +1,10 @@
+all:
+  children:
+    app:
+      hosts:
+        server:
+          ansible_host: "{{ lookup('env', 'SERVER_ADDRESS') }}"
+          ansible_user: "{{ lookup('env', 'SERVER_USER') }}"
+          ansible_ssh_port: "{{ lookup('env', 'SERVER_PORT') }}"
+          ansible_ssh_private_key_file: "~/.ssh/id_rsa"
+          ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
