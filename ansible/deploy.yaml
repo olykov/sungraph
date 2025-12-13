@@ -11,25 +11,17 @@
     postgres_db: "{{ lookup('env', 'POSTGRES_DB') }}"
     api_key: "{{ lookup('env', 'WEATHER_API_KEY') }}"
   
-
+  pre_tasks:
+    - name: Login to Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_user }}"
+        password: "{{ lookup('env', 'DOCKER_HUB_TOKEN') }}"
   
   tasks:
     - name: Ensure working directory exists
       ansible.builtin.file:
         path: "{{ work_dir }}"
         state: directory
-        mode: '0755'
-
-    - name: Copy backend source code
-      ansible.builtin.copy:
-        src: "../backend/"
-        dest: "{{ work_dir }}/backend/"
-        mode: '0755'
-    
-    - name: Copy frontend source code
-      ansible.builtin.copy:
-        src: "../frontend/"
-        dest: "{{ work_dir }}/frontend/"
         mode: '0755'
 
     - name: Create docker-compose.yaml
@@ -55,12 +47,10 @@
                 retries: 5
 
             backend:
-              build: ./backend
+              image: {{ docker_user }}/weather-backend:latest
               container_name: weather-backend
               networks:
                 - core-infra
-              volumes:
-                - ./backend:/app
               environment:
                 - DB_HOST=db
                 - POSTGRES_USER={{ postgres_user }}
@@ -72,13 +62,11 @@
                   condition: service_healthy
 
             worker:
-              build: ./backend
+              image: {{ docker_user }}/weather-backend:latest
               container_name: weather-worker
               networks:
                 - core-infra
               command: python worker.py
-              volumes:
-                - ./backend:/app
               environment:
                 - DB_HOST=db
                 - POSTGRES_USER={{ postgres_user }}
@@ -92,13 +80,11 @@
                   condition: service_healthy
 
             historical_worker:
-              build: ./backend
+              image: {{ docker_user }}/weather-backend:latest
               container_name: weather-historical-worker
               networks:
                 - core-infra
               command: python historical_worker.py
-              volumes:
-                - ./backend:/app
               environment:
                 - DB_HOST=db
                 - POSTGRES_USER={{ postgres_user }}
@@ -112,15 +98,12 @@
                   condition: service_healthy
 
             frontend:
-              build: ./frontend
+              image: {{ docker_user }}/weather-frontend:latest
               container_name: weather-frontend
               networks:
                 - core-infra
               #ports:
               #  - "5179:5173"
-              volumes:
-                - ./frontend:/app
-                - /app/node_modules
               restart: always
           
           networks:
@@ -129,8 +112,8 @@
 
         mode: '0644'
 
-    - name: Build and start containers
+    - name: Pull and start containers
       community.docker.docker_compose_v2:
         project_src: "{{ work_dir }}"
-        build: always
+        pull: always
         state: present
