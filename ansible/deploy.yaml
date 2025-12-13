@@ -3,7 +3,7 @@
   hosts: app
   become: yes
   vars:
-    work_dir: /root/weather-app
+    work_dir: /opt/sungraph
     # Default variable values (can be overridden by env vars)
     docker_user: "{{ lookup('env', 'DOCKER_HUB_USERNAME') }}"
     postgres_user: "{{ lookup('env', 'POSTGRES_USER') }}"
