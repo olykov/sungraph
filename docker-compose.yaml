@@ -68,8 +68,8 @@ services:
     build: ./frontend
     image: ${DOCKER_USER:-olykov}/weather-frontend
     container_name: weather-frontend
-    ports:
-      - "5179:5173"
+    #ports:
+    #  - "5179:5173"
     networks:
       - core-infra
     volumes:

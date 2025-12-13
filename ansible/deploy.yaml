@@ -39,12 +39,15 @@
           services:
             db:
               image: postgres:15-alpine
+              container_name: weather-db
+              networks:
+                - core-infra
               environment:
                 - POSTGRES_USER={{ postgres_user }}
                 - POSTGRES_PASSWORD={{ postgres_password }}
                 - POSTGRES_DB={{ postgres_db }}
               volumes:
-                - postgres_data:/var/lib/postgresql/data
+                - ./db_data:/var/lib/postgresql/data
               healthcheck:
                 test: ["CMD-SHELL", "pg_isready -U {{ postgres_user }} -d {{ postgres_db }}"]
                 interval: 5s
@@ -53,6 +56,9 @@
 
             backend:
               build: ./backend
+              container_name: weather-backend
+              networks:
+                - core-infra
               volumes:
                 - ./backend:/app
               environment:
@@ -67,6 +73,9 @@
 
             worker:
               build: ./backend
+              container_name: weather-worker
+              networks:
+                - core-infra
               command: python worker.py
               volumes:
                 - ./backend:/app
@@ -84,6 +93,9 @@
 
             historical_worker:
               build: ./backend
+              container_name: weather-historical-worker
+              networks:
+                - core-infra
               command: python historical_worker.py
               volumes:
                 - ./backend:/app
@@ -101,15 +113,20 @@
 
             frontend:
               build: ./frontend
-              ports:
-                - "5179:5173"
+              container_name: weather-frontend
+              networks:
+                - core-infra
+              #ports:
+              #  - "5179:5173"
               volumes:
                 - ./frontend:/app
                 - /app/node_modules
               restart: always
+          
+          networks:
+            core-infra:
+              external: true
 
-          volumes:
-            postgres_data:
         mode: '0644'
 
     - name: Build and start containers
