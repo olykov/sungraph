@@ -13,5 +13,45 @@
         "name": "Tbilisi",
         "lat": 41.7151,
         "lon": 44.8271
+    },
+    {
+        "name": "London",
+        "lat": 51.5074,
+        "lon": -0.1278
+    },
+    {
+        "name": "Wroclaw",
+        "lat": 51.1079,
+        "lon": 17.0385
+    },
+    {
+        "name": "Barcelona",
+        "lat": 41.3851,
+        "lon": 2.1734
+    },
+    {
+        "name": "Valencia",
+        "lat": 39.4699,
+        "lon": -0.3763
+    },
+    {
+        "name": "Lisbon",
+        "lat": 38.7223,
+        "lon": -9.1393
+    },
+    {
+        "name": "Oslo",
+        "lat": 59.9139,
+        "lon": 10.7522
+    },
+    {
+        "name": "Amsterdam",
+        "lat": 52.3676,
+        "lon": 4.9041
+    },
+    {
+        "name": "Bucharest",
+        "lat": 44.4268,
+        "lon": 26.1025
     }
 ]
