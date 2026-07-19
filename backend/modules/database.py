@@ -128,7 +128,8 @@ def get_latest_weather(city: str) -> Optional[Dict[str, Any]]:
     """Retrieves the latest weather record for a city."""
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute('SELECT * FROM weather_data WHERE city = %s ORDER BY timestamp DESC LIMIT 1', (city,))
+    # timestamp IS NOT NULL guards against bad rows: NULLs sort first with DESC
+    cursor.execute('SELECT * FROM weather_data WHERE city = %s AND timestamp IS NOT NULL ORDER BY timestamp DESC LIMIT 1', (city,))
     row = cursor.fetchone()
     cursor.close()
     conn.close()

@@ -1,6 +1,7 @@
 import os
 import json
 from time import sleep
+from typing import Optional
 import requests
 from dotenv import load_dotenv
 
@@ -17,11 +18,15 @@ def populate_cities():
         db.add_city(city.name, city.lat, city.lon)
     print("Cities table populated.")
 
-def get_weather(city: City) -> WeatherData:
+def get_weather(city: City) -> Optional[WeatherData]:
     url = f"https://api.openweathermap.org/data/2.5/weather?units=metric&lat={city.lat}&lon={city.lon}&appid={api_key}"
     response = requests.get(url).json()
+    # OpenWeather returns cod=200 on success; anything else is an error payload
+    if response.get('cod') != 200:
+        print(f"API error for {city.name}: {response}")
+        return None
     # Add city name to response for proper parsing
-    response['name'] = city.name 
+    response['name'] = city.name
     return WeatherData.from_api_response(response)
 
 def load_cities(file_path: str) -> list[City]:
@@ -38,7 +43,8 @@ if __name__ == "__main__":
         try:
             for city in cities:
                 weather_data = get_weather(city)
-                db.save_weather_data(weather_data)
+                if weather_data is not None:
+                    db.save_weather_data(weather_data)
                 sleep(300)
             print("Cycle completed, waiting for next run...")
             sleep(60) # Wait a bit before next cycle to avoid rate limits
